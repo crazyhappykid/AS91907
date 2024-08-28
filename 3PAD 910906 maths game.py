@@ -1,4 +1,4 @@
-mport tkinter as tk
+import tkinter as tk
 import random
 import time
 import os 
