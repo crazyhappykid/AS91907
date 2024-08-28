@@ -1,12 +1,7 @@
-#910906
-#3PAD
+mport tkinter as tk
 import random
-from tkinter import*
-import tkinter as tk
-from tkinter import messagebox
-import os
-import time 
-
+import time
+import os 
 #Adding Classes
 class CoolMathsGame:
         def __init__(self,root):
@@ -19,42 +14,95 @@ class CoolMathsGameQuestion:
                 self.operation('+','-','*','/')
                 self.question=""
                 self.answer="None"
-
-#intalising the window
-root=Tk()
-root.title("Cool Maths Game")
-root.geometry('500x500')
-root.configure(bg="#0352fc")
-#Second window
-screen=Tk()
-screen.title("Register screen")
-screen.geometry('500x500')
-screen.configure(bg="Green")
-        
-#Adding image to my code
-bg_canvas = Canvas(root, width=500, height=500)
-bg_canvas.pack(fill="both", expand = True)
+#Main window
+root = tk.Tk()
+root.title('Cool Maths Game')
+root.geometry('250x250')
+#Adding image
+bg_canvas=tk.Canvas(root,width=500,height=500)
+bg_canvas.pack(fill="both",expand=True)
 image_path=tk.PhotoImage(file=r"C:\Users\karti\OneDrive - Lynfield College\3PAD program\futuristic-threshold-with-reflections-on-wall-and-floor-free-video.png")
-bg_canvas.create_image(500, 500, image=image_path)
-#Question handling
-lives = 2
+bg_canvas.create_image(0, 0,anchor="nw", image=image_path)
+# Variables to store question details and game state
+operator =""
+num1 = 0
+num2 = 0
 score = 0
-timer=10
-answer = None
-question = None
-operations = ["+", "-", "*"]
-input_var = tk.StringVar()
+time_left = 10  # 10 seconds for the timer
+timer_running = False
 
+def show_instructions():
+    start_button.pack_forget()
+    exit_button.pack_forget()
+    instructions_frame.pack()
+
+def start_game():
+    global timer_running, score, time_left
+    instructions_frame.pack_forget() #instruction frame to be removed when game starts
+    game_frame.pack()
+    score = 0
+    time_left = 10
+    update_score()
+    generate_question()
+    start_timer()
+   
 def generate_question():
-        global answer, question
-        num1 = random.randint(1,10)
-        num2 = random.randint(1,10)
-        operation = random.choice(operations)
-        question = f"{num1}{operation} {num2}"
-        answer = eval(question)
-        print(answer)
-        question_label.config(text=question)
+    global operator, num1, num2
+    operator = random.choice(['+', '-', '*'])
+    num1 = random.randint(1, 10)
+    num2 = random.randint(1, 10)
+    question_label.config(text=f"What is {num1} {operator} {num2}?")
+    answer_entry.delete(0, tk.END)
+    answer_entry.focus()
 
+def check_answer():
+    global operator, num1, num2, score
+    try:
+        user_answer = int(answer_entry.get())
+    except ValueError:
+        result_label.config(text="Invalid input. Please enter a number.")
+        return
+   
+    if operator == '+':
+        correct_answer = num1 + num2
+    elif operator == '-':
+        correct_answer = num1 - num2
+    elif operator == '*':
+        correct_answer = num1 * num2
+   
+       
+           
+           
+       
+   
+    if user_answer == correct_answer:
+        result_label.config(text="Correct!")
+        score += 1
+    else:
+        result_label.config(text=f"Wrong! The correct answer was {correct_answer:.2f}")
+
+    update_score()
+    generate_question()
+
+
+def update_score():
+    score_label.config(text=f"Score: {score}")
+
+def start_timer():
+    global timer_running
+    timer_running = True
+    update_timer()
+
+def update_timer():
+    global time_left, timer_running
+    if time_left > 0:
+        timer_label.config(text=f"Time Left: {time_left}")
+        time_left -= 1
+        root.after(1000, update_timer)
+    else:
+        timer_label.config(text="Time's up!")
+        timer_running = False
+        save_score()
 def submit():
         global score, lives
 
@@ -65,92 +113,69 @@ def submit():
         try:
                 if int(input_var.get()) == answer:
                        score += 1
-                       score_Label.config(text=str(score))
+                       score_Label.config(text=st(score))
                        generate_question()
                 else:
                         messagebox.showinfo(message="Wrong")
                         lives -= 1
-                        lives_label.config(text=str(lives))
+                        lives_label.config(text=int(lives))
                         generate_question()
         except Exception as e:
                 messagebox.showerror(message=e)
-#Labels and buttons 
-title_label=tk.Label(root,text="Welcome to Cool Maths Game",font=('Arial,10'),bg='White',borderwidth=20)
-title_label.place(relx=0.5, anchor="c", y=20)
-start_button=tk.Button(root,text="Start",command=generate_question)
-start_button.place(relx=0.5, anchor="c", y=60)
-instruction_label=tk.Label(root,text="Solve the Maths questions:",font=('Arial,10'),bg="White",borderwidth=10)
-instruction_label.place(relx=0.5, anchor="c", y=100)
-question_label=tk.Label(root,text="2+2",font=('Arial,10'),bg='white',borderwidth=20)
-question_label.place(relx=0.5, anchor="c", y=150)
-answer_entry=tk.Entry(font=('Arial',10),textvariable=input_var)
-answer_entry.place(relx=0.5, anchor="c", y=200)
-submit_button=tk.Button(root,text="Submit", command=submit)
-submit_button.place(relx=0.5, anchor="c", y=250)
-tryAgain_button=tk.Button(root,text="TryAgain",font=('Arial,10'),command=generate_question)
-tryAgain_button.place(relx=0.5, anchor="c", y=300)
-score_Label=tk.Label(root,text="score=0",font=('Arial',20),bg="White",borderwidth=10)
-score_Label.place(relx=0.5, anchor="c", y=350)
-exit_label=tk.Button(root,text="Exit",font=('Arial',10),command=exit)
-exit_label.place(x=0, anchor="nw", y=0)
-lives_label=tk.Label(root,text=F"Lives:{lives}",font=('Arial',12),bg="White",borderwidth=10)
-lives_label.place(relx=0.5, anchor="c", y=400)
-timer_label=tk.Label(root,text="Timeleft=10seconds",font=('Arial',10),bg='white')
-timer_label.place(relx=0.5,anchor="c",y=450)
+def save_score():
+        
+    with open("score.txt", "w") as file:
+        file.write(f"Final Score: {score}\n")
 
-#File handling
-def save_student_info():
-    first_name=first_name.get()
-    last_name=last_name.get()
-    student_id=student_id.get()
-    user_score=user_score.get()
-    student_id=input('Enter Student ID')
-    first_name=input('Enter  first name')
-    last_name=input('Enter your last name')
-    user_score=input('Enter your final score')
-    file.write(f"{desktop.initid},{name},{score}/n")
-    print('User,Student data saved sucessfully')
-    file=open('User.txt',"w")
-    file.write('Firstname:',firstname_info)
-    file.write('lastname:',lastname_info)
-    file.write('studentid:',studentid_info)
-    file.write('userscore:',userscore_info)
-    file.close()
-    print("user",Firstname_info,'has been registered successfully')
-firstname=StringVar()
-lastname=StringVar()
-userscore=IntVar()
-studentid=IntVar()
-firstname_entry=Entry(screen, textvariable=firstname,width='30')
-lastname_entry=Entry(screen, textvariable=lastname,width='30')
-studentid_entry=Entry(screen, textvariable=studentid,width='30')
-userscore_entry=Entry(screen, textvariable=userscore,width='30')
-registered_button=tk.Button(screen, text="registerd",font=('Arial',10),bg="White",borderwidth=20)
-registered_button.place(relx=0.5, anchor="c", y=300)
-firstname_label=tk.Label(screen,text="Firstname",font=('Arial',10),bg="White")
-lastname_label=tk.Label(screen,text="Lastname",font=('Arial',10),bg="White")
-studentid_label=tk.Label(screen,text="Studentid",font=('Arial',10),bg="White")
-userscore_label=tk.Label(screen,text="Userscore",font=('Arial',10),bg='White')
-firstname_label.place(relx=0.5,anchor="e",y=100)
-lastname_label.place(relx=0.5,anchor="e",y=150)
-studentid_label.place(relx=0.5,anchor="e",y=200)
-userscore_label.place(relx=0.5,anchor="e",y=250)
-#entries
-firstname_entry.place(relx=0.5,anchor="w",y=100)
-lastname_entry.place(relx=0.5,anchor="w",y=150)
-studentid_entry.place(x=0.5,anchor="w",y=200)
-userscore_entry.place(x=0.5,anchor="w",y=250)
+# instructions frame and label
+instructions_frame = tk.Frame(root)
+instructions_text = tk.Label(instructions_frame, text="You\n"
+                                 "You will have 10 seconds timer to answer the question\n"
+                                 "The game will ask you basic maths question \n"
+                                 "You will have two lives to play the game")
+instructions_text.pack(pady=10)
 
 
+# home screen frame
+home_frame = tk.Frame(root)
+home_frame.pack(pady=30)
+
+# start button
+start_button = tk.Button(home_frame, text='Start', width=20,fg="Green", command=show_instructions)
+start_button.pack(padx=50, side=tk.LEFT)
+
+# exit button
+exit_button = tk.Button(home_frame, text='Exit', fg="Red",width=20, command=exit)
+exit_button.pack(padx=50, side=tk.LEFT)
+
+# back button
+start_game_button = tk.Button(instructions_frame, text='Start Game', command=start_game)
+start_game_button.pack(pady=10)
+
+# game screen
+game_frame = tk.Frame(root)
+question_label = tk.Label(game_frame, text="")
+question_label.pack(pady=10)
+
+answer_entry = tk.Entry(game_frame)
+answer_entry.pack(pady=10)
+
+submit_button = tk.Button(game_frame, text="Submit", command=check_answer)
+submit_button.pack(pady=10)
+
+result_label = tk.Label(game_frame, text="")
+result_label.pack(pady=10)
+
+score_label = tk.Label(game_frame, text="Score: 0")
+score_label.pack(pady=10)
+
+timer_label = tk.Label(game_frame, text="Time Left: 10")
+timer_label.pack(pady=10)
 #Running the code
 if __name__=="_main_":
         root=tk.Tk()
         app=CoolMathsGame(root)
         root.mainloop()
 
-screen.mainloop()
-generate_question()                          
 root.mainloop()
-
-
 
